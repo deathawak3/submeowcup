@@ -562,10 +562,13 @@ async function storeGet(key, shared){
   try {
     if (window.storage && typeof window.storage.get === 'function') {
       const r = await window.storage.get(key, shared);
+      console.log('STORAGE GET SUCCESS:', key, r);
       return r ? r.value : null;
+    } else {
+      console.warn('window.storage.get is not available, falling back to localStorage');
     }
   } catch(e) {
-    console.error('Storage get error for key:', key, e);
+    console.error('STORAGE GET ERROR for key:', key, e);
   }
   return localStorage.getItem(key);
 }
@@ -574,10 +577,13 @@ async function storeSet(key, value, shared){
   try {
     if (window.storage && typeof window.storage.set === 'function') {
       await window.storage.set(key, value, shared);
+      console.log('STORAGE SET SUCCESS:', key);
       return true;
+    } else {
+      console.warn('window.storage.set is not available, falling back to localStorage');
     }
   } catch(e) {
-    console.error('Storage set error for key:', key, e);
+    console.error('STORAGE SET ERROR for key:', key, e);
   }
   try {
     localStorage.setItem(key, value);
@@ -932,6 +938,72 @@ function slotHtml(matchId, slotIndex, data, editable, lockedMatches){
   return `<div class="${classes.join(' ')}"${rosterAttr} ${clickable?`data-pick="${matchId}:${teamId}"`:''}>${badge}<span class="name">${name}</span>${stat}</div>`;
 }
 
+
+// --- ТУТ УЖЕ ЕЩЕ КАКИЕ-ТО ПЕРЕМЕННЫЕ И КОД ---
+
+const BIN_ID = '6a7320e5f5f4af5e29ee154d';
+const API_KEY = '$2a$10$DgDHYcnxIMRFY6vQiX.QM.CmCFiGiCmiEPAu6h8wCriQQVmB8EYja';
+
+// ВСТАВЬ СВОИ НОВЫЕ ФУНКЦИИ СЮДА:
+async function storeGet(key, shared){
+  if (!shared) {
+    return localStorage.getItem(key);
+  }
+  try {
+    const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+      headers: {
+        'X-Master-Key': API_KEY
+      }
+    });
+    if (!response.ok) throw new Error('Network response was not ok');
+    const data = await response.json();
+    const record = data.record || {};
+    return record[key] !== undefined ? JSON.stringify(record[key]) : null;
+  } catch(e) {
+    console.error('JSONBin GET error:', e);
+    return localStorage.getItem(key);
+  }
+}
+
+async function storeSet(key, value, shared){
+  if (!shared) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch(err) {
+      return false;
+    }
+  }
+  try {
+    const getRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    const getData = await getRes.json();
+    let record = getData.record || {};
+
+    try {
+      record[key] = JSON.parse(value);
+    } catch(err) {
+      record[key] = value;
+    }
+
+    const putRes = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify(record)
+    });
+
+    if (!putRes.ok) throw new Error('Failed to update jsonbin');
+    return true;
+  } catch(e) {
+    console.error('JSONBin SET error:', e);
+    try { localStorage.setItem(key, value); } catch(err) {}
+    return false;
+  }
+}
 function renderBracket(containerId, data, editable, onPick, lockedMatches){
   const stage = document.getElementById(containerId);
   stage.innerHTML = '';
@@ -1080,6 +1152,7 @@ async function init(){
   renderBracketTab();
 }
 init();
+
 
 })();
 </script>
