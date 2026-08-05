@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SubMeow Cup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --bg:#EEF1F6;
+  --panel:#FFFFFF;
+  --panel-2:#F6F8FA;
+  --border:#D9DEE6;
+  --border-soft:#E8EBF0;
+  --text:#1B2430;
+  --text-muted:#69707F;
+  --text-dim:#9AA3B2;
+  --accent:#7A2331;
+  --ub:#2F6FED;
+  --ub-tint:#EAF1FE;
+  --lb:#D97B2E;
+  --lb-tint:#FCF1E5;
+  --gf:#B8860B;
+  --gf-tint:#FBF3DE;
+  --win-bg:#E9F7EC;
+  --win-text:#1C7A3E;
+  --lose-bg:#FCEFEF;
+  --lose-text:#B23A3A;
+  --sim:#8B5CF6;
+  --sim-tint:#F2EEFE;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  zoom: 150%;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px;}
+
+.top{margin-bottom:22px;position:relative;}
+h1{
+  font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.01em;
+  font-size:clamp(28px,4vw,38px);margin:0;line-height:1.05;color:var(--text);
+  text-align:center;
+}
+
+.block{margin-bottom:38px;}
+.block:last-child{margin-bottom:0;}
+.section-title{
+  font-family:'Oswald',sans-serif;font-weight:700;color:var(--accent);
+  font-size:15px;text-transform:uppercase;letter-spacing:.04em;margin:0 0 12px;
+}
+
+.participants-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;}
+.team-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;
+  overflow:hidden;box-shadow:0 1px 2px rgba(20,30,50,.04);align-self:start;
+}
+.team-card-head{
+  display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;user-select:none;
+}
+.team-card-head:hover{background:var(--panel-2);}
+.chevron{
+  flex:none;width:16px;height:16px;color:var(--text-dim);transition:transform .15s ease;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+}
+.team-card.expanded .chevron{transform:rotate(90deg);}
+.badge{
+  width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:700;flex:none;color:#fff;font-family:'Oswald',sans-serif;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+.team-card-name{font-size:14.5px;font-weight:600;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team-card-body{display:none;border-top:1px solid var(--border-soft);padding:14px;background:var(--panel-2);}
+.team-card.expanded .team-card-body{display:block;}
+
+.players-list{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--panel);}
+.player-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border-soft);}
+.player-row:last-child{border-bottom:none;}
+.player-num{
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;background:var(--text-dim);
+  width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex:none;
+}
+.player-name{font-size:13.5px;color:var(--text);flex:1;}
+.player-name.empty{color:var(--text-dim);font-style:italic;}
+.player-row input{
+  flex:1;background:var(--panel-2);border:1px solid var(--border);border-radius:7px;
+  padding:6px 9px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;
+}
+.player-row input:focus{outline:none;border-color:var(--ub);}
+
+.team-edit-fields{display:flex;gap:8px;margin-bottom:12px;}
+.team-edit-fields label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);font-family:'JetBrains Mono',monospace;display:block;margin-bottom:4px;}
+.team-edit-fields input{
+  background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);padding:7px 10px;font-size:14px;font-family:'Inter',sans-serif;width:100%;
+}
+.team-edit-fields input:focus{outline:none;border-color:var(--ub);}
+.logo-input{width:60px !important;text-align:center;}
+.field-grow{flex:1;min-width:0;}
+.field-fixed{flex:none;}
+
+.roster-upload-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.roster-thumb{width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid var(--border);cursor:pointer;flex:none;}
+.roster-upload-btn{font-size:11.5px;padding:6px 10px;cursor:pointer;}
+.roster-remove-btn{font-size:11.5px;padding:6px 10px;}
+.roster-error{color:var(--lose-text);font-size:11px;margin:6px 0 0;font-family:'JetBrains Mono',monospace;}
+.roster-view-btn{
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ub);background:var(--ub-tint);
+  border:1px solid var(--ub);padding:5px 10px;border-radius:7px;cursor:pointer;margin-top:10px;display:inline-block;
+}
+
+.admin-bar{
+  position:absolute;
+  right:0;
+  top:0;
+  display:none;
+  align-items:center;
+  gap:10px;
+}
+.admin-bar.active{
+  display:flex;
+}
+.modal-overlay{position:fixed;inset:0;background:rgba(12,16,24,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+.modal-box{background:var(--panel);border-radius:14px;padding:22px;width:100%;max-width:300px;box-shadow:0 12px 34px rgba(10,15,25,.3);}
+.modal-box h3{margin:0 0 14px;font-family:'Oswald',sans-serif;font-size:16px;color:var(--text);}
+.modal-box input{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);
+  background:var(--panel-2);margin-bottom:8px;font-size:14px;color:var(--text);font-family:'Inter',sans-serif;
+}
+.modal-box input:focus{outline:none;border-color:var(--ub);}
+.modal-error{color:var(--lose-text);font-size:12.5px;margin:0 0 10px;display:none;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.roster-modal-box{max-width:640px;}
+.roster-modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;}
+.roster-modal-head h3{margin:0;}
+.roster-modal-close{background:transparent;border:none;font-size:20px;line-height:1;color:var(--text-muted);cursor:pointer;padding:2px 6px;border-radius:6px;}
+.roster-modal-close:hover{color:var(--text);background:var(--panel-2);}
+#rosterModalImg{width:100%;display:block;border-radius:10px;}
+
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;}
+.group-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,30,50,.04);}
+.group-panel-head{
+  background:var(--panel-2);border-bottom:1px solid var(--border);padding:12px 16px;
+  font-family:'Oswald',sans-serif;font-weight:700;color:var(--accent);font-size:14px;
+  text-transform:uppercase;letter-spacing:.03em;
+}
+.group-row{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-soft);
+}
+.group-row:last-child{border-bottom:none;}
+.group-row.qualify-up{background:var(--win-bg);}
+.group-row.qualify-down{background:var(--lose-bg);}
+.g-rank{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text-dim);width:16px;flex:none;font-size:13px;text-align:center;}
+.g-badge{width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;}
+.g-name{flex:1;min-width:0;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.g-controls{display:flex;flex-direction:column;gap:2px;flex:none;margin-right:2px;}
+.g-controls button{
+  border:1px solid var(--border);background:#fff;color:var(--text-muted);border-radius:4px;
+  width:18px;height:14px;font-size:8px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.g-controls button:hover:not(:disabled){border-color:var(--ub);color:var(--ub);}
+.g-controls button:disabled{opacity:.25;cursor:default;}
+
+.g-stats-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none;}
+.g-stat-item{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--text);}
+.g-stat-item.score-col{width:40px;text-align:center;}
+.g-stat-item.rounds-col{width:56px;text-align:center;color:var(--text-muted);}
+.g-diff{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;padding:3px 6px;border-radius:5px;min-width:38px;text-align:center;}
+.g-diff.pos{background:rgba(28,122,62,0.12);color:var(--win-text);}
+.g-diff.neg{background:rgba(178,58,58,0.12);color:var(--lose-text);}
+.g-diff.zero{background:var(--panel-2);color:var(--text-muted);}
+
+.g-stats-edit{display:flex;align-items:center;gap:5px;margin-left:auto;flex:none;}
+.g-stats-edit input{
+  background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:4px 5px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text);text-align:center;
+}
+.g-stats-edit input.score-field{width:46px;}
+.g-stats-edit input.rw-field,.g-stats-edit input.rl-field{width:36px;}
+.g-stats-edit input:focus{outline:none;border-color:var(--ub);}
+
+.has-roster{cursor:pointer;}
+.badge.has-roster{box-shadow:0 0 0 2px var(--ub),0 1px 3px rgba(0,0,0,.15);}
+.g-badge.has-roster{box-shadow:0 0 0 2px var(--ub);}
+.g-name.has-roster{text-decoration:underline dotted;text-underline-offset:3px;}
+.mini-badge.has-roster{box-shadow:0 0 0 2px var(--ub);}
+.slot.has-roster:hover{background:var(--panel-2);}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.left-controls,.right-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.score-pill{
+  font-family:'JetBrains Mono',monospace;font-size:12.5px;background:var(--panel);
+  border:1px solid var(--border);padding:7px 13px;border-radius:999px;color:var(--text-muted);
+}
+.score-pill b{color:var(--text);}
+.btn{
+  font-family:'Oswald',sans-serif;font-weight:500;letter-spacing:.02em;font-size:13px;
+  background:var(--panel);border:1px solid var(--border);color:var(--text);
+  padding:9px 15px;border-radius:8px;cursor:pointer;transition:all .15s ease;
+}
+.btn:hover{border-color:var(--text-dim);}
+.btn.danger{color:var(--lose-text);}
+.btn.danger:hover{border-color:var(--lose-text);}
+.btn.sim{background:var(--sim);color:#fff;border-color:var(--sim);font-weight:700;}
+.btn.sim:hover{opacity:.9;}
+.btn.sim.active{background:#fff;color:var(--sim);border-color:var(--sim);}
+
+/* Адаптивная сетка без скролла */
+.bracket-scroll{
+  width:100%;
+  overflow:hidden;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:0 1px 3px rgba(20,30,50,.05);
+}
+.bracket-wrapper{
+  position:relative;
+  width:100%;
+}
+.bracket-stage{
+  position:absolute;
+  left:0;
+  top:0;
+  width:1470px;
+  height:640px;
+  transform-origin:0 0;
+}
+svg.connectors{position:absolute;left:20px;top:20px;width:1470px;height:640px;pointer-events:none;}
+
+.col-header{
+  position:absolute;width:210px;text-align:center;
+  font-family:'Oswald',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.03em;
+  color:var(--text-muted);background:var(--panel-2);border:1px solid var(--border-soft);
+  border-radius:7px;padding:7px 6px;text-transform:uppercase;
+}
+.col-header.ub{color:var(--ub);}
+.col-header.lb{color:var(--lb);}
+.col-header.gf{color:var(--gf);background:var(--gf-tint);border-color:var(--gf);}
+
+.conn{fill:none;stroke-width:2;stroke:var(--border);opacity:.8;}
+.conn.lit-ub{stroke:var(--ub);opacity:1;}
+.conn.lit-lb{stroke:var(--lb);opacity:1;}
+.conn.lit-gf{stroke:var(--gf);opacity:1;}
+
+.match-box{
+  position:absolute;width:210px;border-radius:9px;overflow:hidden;
+  background:var(--panel);border:1px solid var(--border);
+  box-shadow:0 1px 2px rgba(20,30,50,.05);
+}
+.match-box.gf{border-color:var(--gf);box-shadow:0 0 0 1px var(--gf);}
+
+.slot{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;
+  border-bottom:1px solid var(--border-soft);cursor:default;transition:background .12s ease;
+  background:#fff;
+}
+.slot:last-child{border-bottom:none;}
+.slot.pickable{cursor:pointer;}
+.slot.pickable:hover{background:var(--panel-2);}
+.slot .mini-badge{width:22px;height:22px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;}
+.slot .name{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);}
+.slot.tbd .name{color:var(--text-dim);font-style:italic;font-weight:400;}
+.slot.tbd .mini-badge{background:var(--border) !important;}
+.slot.eliminated{background:var(--lose-bg);}
+.slot.eliminated .name{color:var(--lose-text);}
+.slot.eliminated .mini-badge{opacity:.5;}
+.slot.winner{background:var(--win-bg);}
+.slot.winner .name{color:var(--win-text);font-weight:700;}
+.slot .stat{margin-left:auto;width:16px;height:16px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.slot.winner .stat{background:var(--win-text);color:#fff;}
+.slot.eliminated .stat{background:var(--border);color:transparent;}
+.slot.locked{cursor:default;}
+.slot.from-ub{box-shadow:inset 3px 0 0 var(--ub);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <h1>SubMeow Cup</h1>
+    <div class="admin-bar" id="adminBar">
+      <button class="btn" id="adminBtn">Выйти из админки</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="adminModal" style="display:none">
+    <div class="modal-box">
+      <h3>Вход для администратора</h3>
+      <input type="password" id="adminPassInput" placeholder="Пароль" autocomplete="current-password" />
+      <p class="modal-error" id="adminError">Неверный пароль</p>
+      <div class="modal-actions">
+        <button class="btn" id="adminCancelBtn">Отмена</button>
+        <button class="btn sim" id="adminSubmitBtn">Войти</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+        function saveData() {
+            const value = document.getElementById('myInput').value;
+            console.log("Сохраняем данные:", value);
+            // Здесь будет код отправки на GitHub API или в базу
+        }
+    </script>
+
+  <div class="modal-overlay" id="confirmModal" style="display:none">
+    <div class="modal-box">
+      <h3 id="confirmTitle">Подтвердите действие</h3>
+      <p id="confirmMessage" style="color:var(--text-muted);font-size:13.5px;line-height:1.55;margin:0 0 18px;"></p>
+      <div class="modal-actions">
+        <button class="btn" id="confirmCancelBtn">Отмена</button>
+        <button class="btn danger" id="confirmOkBtn" style="border-color:var(--lose-text)">Сбросить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="rosterModal" style="display:none">
+    <div class="modal-box roster-modal-box">
+      <div class="roster-modal-head">
+        <h3 id="rosterModalTitle"></h3>
+        <button class="roster-modal-close" id="rosterModalCloseBtn" aria-label="Закрыть">✕</button>
+      </div>
+      <img id="rosterModalImg" alt="Карточка состава" />
+    </div>
+  </div>
+
+  <section class="block" id="block-teams">
+    <p class="section-title">Участники</p>
+    <div class="participants-grid" id="participantsGrid"></div>
+  </section>
+
+  <section class="block" id="block-groups">
+    <p class="section-title">Групповой этап</p>
+    <div class="groups-grid">
+      <div class="group-panel">
+        <div class="group-panel-head">Группа A</div>
+        <div id="groupRowsA"></div>
+      </div>
+      <div class="group-panel">
+        <div class="group-panel-head">Группа B</div>
+        <div id="groupRowsB"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="block-bracket">
+    <p class="section-title">Турнирная сетка</p>
+    <div class="toolbar">
+      <div class="left-controls">
+        <span class="score-pill" id="progressPill">Сыграно матчей: <b id="progressVal">0/10</b></span>
+      </div>
+      <div class="right-controls">
+        <button class="btn sim" id="simToggleBtn">Режим симуляции</button>
+        <button class="btn danger" id="resetBtn">Сбросить результаты</button>
+      </div>
+    </div>
+    <div class="bracket-scroll">
+      <div class="bracket-wrapper" id="bracketWrapper">
+        <div class="bracket-stage" id="bracketStage"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+
+const GROUP_TEAM_IDS = { A:['GA1','GA2','GA3','GA4'], B:['GB1','GB2','GB3','GB4'] };
+const ALL_TEAM_IDS = [...GROUP_TEAM_IDS.A, ...GROUP_TEAM_IDS.B];
+const EMPTY_PLAYERS = ['','','','',''];
+const TEAM_DEFAULTS = {
+  GA1:{name:'Команда A1', logo:'🐺', color:'#8B7CF6', players:['','','','','']},
+  GA2:{name:'Команда A2', logo:'🦅', color:'#4FA8E8', players:['','','','','']},
+  GA3:{name:'Команда A3', logo:'🐯', color:'#E8598F', players:['','','','','']},
+  GA4:{name:'Команда A4', logo:'🦁', color:'#8FD14F', players:['','','','','']},
+  GB1:{name:'Команда B1', logo:'🐻', color:'#D9942E', players:['','','','','']},
+  GB2:{name:'Команда B2', logo:'🦈', color:'#3AB6C4', players:['','','','','']},
+  GB3:{name:'Команда B3', logo:'🦊', color:'#E0637A', players:['','','','','']},
+  GB4:{name:'Команда B4', logo:'🦉', color:'#7A8FD1', players:['','','','','']},
+};
+const TEAM_GROUP = {};
+GROUP_TEAM_IDS.A.forEach(id=>TEAM_GROUP[id]='A');
+GROUP_TEAM_IDS.B.forEach(id=>TEAM_GROUP[id]='B');
+
+const MATCHES = {
+  UB_SF1:{round:'ub', slots:[{type:'group',group:'A',rank:0},{type:'group',group:'B',rank:1}]},
+  UB_SF2:{round:'ub', slots:[{type:'group',group:'B',rank:0},{type:'group',group:'A',rank:1}]},
+  UB_F:  {round:'ub', slots:[{type:'winner',match:'UB_SF1'},{type:'winner',match:'UB_SF2'}]},
+
+  LB_R1_1:{round:'lb', slots:[{type:'group',group:'A',rank:2},{type:'group',group:'B',rank:3}]},
+  LB_R1_2:{round:'lb', slots:[{type:'group',group:'B',rank:2},{type:'group',group:'A',rank:3}]},
+  LB_R2_1:{round:'lb', slots:[{type:'winner',match:'LB_R1_1'},{type:'loser',match:'UB_SF1'}]},
+  LB_R2_2:{round:'lb', slots:[{type:'winner',match:'LB_R1_2'},{type:'loser',match:'UB_SF2'}]},
+  LB_SF:  {round:'lb', slots:[{type:'winner',match:'LB_R2_1'},{type:'winner',match:'LB_R2_2'}]},
+  LB_F:   {round:'lb', slots:[{type:'winner',match:'LB_SF'},{type:'loser',match:'UB_F'}]},
+
+  GF:{round:'gf', slots:[{type:'winner',match:'UB_F'},{type:'winner',match:'LB_F'}]},
+};
+const MATCH_ORDER = ['UB_SF1','UB_SF2','UB_F','LB_R1_1','LB_R1_2','LB_R2_1','LB_R2_2','LB_SF','LB_F','GF'];
+
+const BOX_W = 210, BOX_H = 62;
+const LAYOUT = {
+  UB_SF1:{x:320, y:64},
+  UB_SF2:{x:320, y:194},
+  UB_F:  {x:620, y:129},
+
+  LB_R1_1:{x:20,  y:364},
+  LB_R1_2:{x:20,  y:504},
+  LB_R2_1:{x:320, y:324},
+  LB_R2_2:{x:320, y:504},
+  LB_SF:  {x:620, y:414},
+  LB_F:   {x:920, y:269},
+
+  GF:{x:1220, y:199},
+};
+const COL_HEADERS = [
+  {x:320, y:10, text:'Верхняя сетка · Раунд 1', zone:'ub'},
+  {x:620, y:10, text:'Верхняя сетка · Финал',   zone:'ub'},
+  {x:1220,y:10, text:'Гранд-финал',              zone:'gf'},
+  {x:20,  y:284,text:'Нижняя сетка · Раунд 1',  zone:'lb'},
+  {x:320, y:284,text:'Нижняя сетка · Раунд 2',  zone:'lb'},
+  {x:620, y:284,text:'Нижняя сетка · Полуфинал',zone:'lb'},
+  {x:920, y:284,text:'Нижняя сетка · Финал',    zone:'lb'},
+];
+
+const CONNECTORS = [
+  {from:'UB_SF1', to:'UB_F', toSlot:0, zone:'ub'},
+  {from:'UB_SF2', to:'UB_F', toSlot:1, zone:'ub'},
+
+  {from:'LB_R1_1', to:'LB_R2_1', toSlot:0, zone:'lb'},
+  {from:'LB_R1_2', to:'LB_R2_2', toSlot:0, zone:'lb'},
+
+  {from:'LB_R2_1', to:'LB_SF', toSlot:0, zone:'lb'},
+  {from:'LB_R2_2', to:'LB_SF', toSlot:1, zone:'lb'},
+
+  {from:'LB_SF', to:'LB_F', toSlot:0, zone:'lb'},
+
+  {from:'UB_F', to:'GF', toSlot:0, zone:'gf'},
+  {from:'LB_F', to:'GF', toSlot:1, zone:'gf'},
+];
+
+let teams = JSON.parse(JSON.stringify(TEAM_DEFAULTS));
+let groupOrder = JSON.parse(JSON.stringify(GROUP_TEAM_IDS));
+let results = {};
+let simPicks = {};
+let mode = 'results';
+let groupStats = {};
+ALL_TEAM_IDS.forEach(id=>{ groupStats[id] = {score:'', rw:0, rl:0}; });
+let rosterImages = {};
+let expandedTeams = new Set();
+
+const ADMIN_PASSWORD_HASH = '4011b04fe4547d8d461e099745582b2c31367a89b264328223a159d7de18bbc9';
+let isAdmin = false;
+
+const SECRET_CODE = '09062927';
+let keyBuffer = '';
+
+document.addEventListener('keydown', (e) => {
+  const targetTag = e.target.tagName.toLowerCase();
+  if (targetTag === 'input' || targetTag === 'textarea') return;
+
+  if (e.key >= '0' && e.key <= '9') {
+    keyBuffer += e.key;
+    if (keyBuffer.length > SECRET_CODE.length) {
+      keyBuffer = keyBuffer.slice(-SECRET_CODE.length);
+    }
+    if (keyBuffer === SECRET_CODE) {
+      keyBuffer = '';
+      if (!isAdmin) {
+        openAdminModal();
+      }
+    }
+  } else {
+    keyBuffer = '';
+  }
+});
+
+function fitBracket() {
+  const wrapper = document.getElementById('bracketWrapper');
+  const stage = document.getElementById('bracketStage');
+  if (!wrapper || !stage) return;
+
+  const scale = wrapper.clientWidth / 1470;
+  stage.style.transform = `scale(${scale})`;
+  wrapper.style.height = `${640 * scale}px`;
+}
+window.addEventListener('resize', fitBracket);
+
+async function sha256Hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function updateAdminUI(){
+  const adminBar = document.getElementById('adminBar');
+  if (isAdmin) {
+    adminBar.classList.add('active');
+  } else {
+    adminBar.classList.remove('active');
+  }
+}
+
+function openAdminModal(){
+  document.getElementById('adminModal').style.display = 'flex';
+  document.getElementById('adminError').style.display = 'none';
+  const input = document.getElementById('adminPassInput');
+  input.value = '';
+  setTimeout(()=>input.focus(), 30);
+}
+function closeAdminModal(){
+  document.getElementById('adminModal').style.display = 'none';
+}
+async function submitAdminPassword(){
+  const input = document.getElementById('adminPassInput');
+  const hash = await sha256Hex(input.value);
+  if(hash === ADMIN_PASSWORD_HASH){
+    isAdmin = true;
+    closeAdminModal();
+    updateAdminUI();
+    renderParticipants();
+    renderGroups();
+    renderBracketTab();
+  } else {
+    document.getElementById('adminError').style.display = 'block';
+  }
+}
+
+document.getElementById('adminBtn').addEventListener('click', ()=>{
+  if(isAdmin){
+    isAdmin = false;
+    updateAdminUI();
+    renderParticipants();
+    renderGroups();
+    renderBracketTab();
+  }
+});
+document.getElementById('adminCancelBtn').addEventListener('click', closeAdminModal);
+document.getElementById('adminSubmitBtn').addEventListener('click', submitAdminPassword);
+document.getElementById('adminPassInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') submitAdminPassword();
+});
+document.getElementById('adminModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'adminModal') closeAdminModal();
+});
+
+let confirmResolver = null;
+function showConfirm(message){
+  document.getElementById('confirmMessage').textContent = message;
+  document.getElementById('confirmModal').style.display = 'flex';
+  return new Promise(resolve=>{ confirmResolver = resolve; });
+}
+function resolveConfirm(result){
+  document.getElementById('confirmModal').style.display = 'none';
+  if(confirmResolver){ confirmResolver(result); confirmResolver = null; }
+}
+document.getElementById('confirmCancelBtn').addEventListener('click', ()=>resolveConfirm(false));
+document.getElementById('confirmOkBtn').addEventListener('click', ()=>resolveConfirm(true));
+document.getElementById('confirmModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'confirmModal') resolveConfirm(false);
+});
+
+async function storeGet(key, shared){
+  try{ const r = await window.storage.get(key, shared); return r ? r.value : null; }
+  catch(e){ return null; }
+}
+async function storeSet(key, value, shared){
+  try{ await window.storage.set(key, value, shared); return true; }
+  catch(e){ console.error('storage set failed', key, e); return false; }
+}
+async function storeDelete(key, shared){
+  try{ await window.storage.delete(key, shared); return true; }
+  catch(e){ return false; }
+}
+
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(reader.result);
+    reader.onerror = ()=>reject(reader.error || new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+function rosterErrorEl(id){
+  return document.querySelector(`.roster-error[data-roster-err="${id}"]`);
+}
+async function onRosterFileChange(input){
+  const id = input.getAttribute('data-roster');
+  const file = input.files && input.files[0];
+  if(!id || !file) return;
+  const errEl = rosterErrorEl(id);
+  if(errEl){ errEl.style.display = 'none'; errEl.textContent = ''; }
+  if(!file.type || !file.type.startsWith('image/')){
+    if(errEl){ errEl.textContent = 'Нужен файл изображения.'; errEl.style.display = 'block'; }
+    input.value = '';
+    return;
+  }
+  try{
+    const dataUrl = await readFileAsDataURL(file);
+    const approxBytes = dataUrl.length * 0.75;
+    if(approxBytes > 4.5 * 1024 * 1024){
+      if(errEl){ errEl.textContent = 'Файл слишком большой (макс. ~4 МБ) — сожмите изображение и попробуйте снова.'; errEl.style.display = 'block'; }
+      input.value = '';
+      return;
+    }
+    rosterImages[id] = dataUrl;
+    renderParticipants();
+    const ok = await storeSet('roster-img:'+id, dataUrl, true);
+    if(!ok){
+      const errEl2 = rosterErrorEl(id);
+      if(errEl2){ errEl2.textContent = 'Не удалось сохранить изображение, попробуйте ещё раз.'; errEl2.style.display = 'block'; }
+    }
+  }catch(err){
+    if(errEl){ errEl.textContent = 'Не удалось прочитать файл.'; errEl.style.display = 'block'; }
+  }
+}
+async function onRosterRemove(id){
+  delete rosterImages[id];
+  renderParticipants();
+  await storeDelete('roster-img:'+id, true);
+}
+function openRosterModal(id){
+  const img = rosterImages[id];
+  if(!img) return;
+  const t = teams[id];
+  document.getElementById('rosterModalTitle').textContent = t ? t.name : '';
+  document.getElementById('rosterModalImg').src = img;
+  document.getElementById('rosterModal').style.display = 'flex';
+}
+function closeRosterModal(){
+  document.getElementById('rosterModal').style.display = 'none';
+  document.getElementById('rosterModalImg').src = '';
+}
+document.getElementById('rosterModalCloseBtn').addEventListener('click', closeRosterModal);
+document.getElementById('rosterModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'rosterModal') closeRosterModal();
+});
+
+document.addEventListener('change', (e)=>{
+  const rosterInput = e.target.closest('input[data-roster]');
+  if(rosterInput){ onRosterFileChange(rosterInput); return; }
+});
+document.addEventListener('click', (e)=>{
+  const removeBtn = e.target.closest('[data-roster-remove]');
+  if(removeBtn){ onRosterRemove(removeBtn.getAttribute('data-roster-remove')); return; }
+  const viewEl = e.target.closest('[data-roster-view]');
+  if(viewEl && !e.target.closest('.team-card-body')){ openRosterModal(viewEl.getAttribute('data-roster-view')); return; }
+  const toggleEl = e.target.closest('[data-toggle]');
+  if(toggleEl){
+    const id = toggleEl.getAttribute('data-toggle');
+    if(expandedTeams.has(id)) expandedTeams.delete(id); else expandedTeams.add(id);
+    renderParticipants();
+  }
+});
+
+function resolveSlot(slot, data){
+  if(slot.type === 'group') return groupOrder[slot.group][slot.rank];
+  if(slot.type === 'team') return slot.team;
+  const winnerId = data[slot.match];
+  if(!winnerId) return null;
+  if(slot.type === 'winner') return winnerId;
+  if(slot.type === 'loser'){
+    const m = MATCHES[slot.match];
+    const t1 = resolveSlot(m.slots[0], data);
+    const t2 = resolveSlot(m.slots[1], data);
+    if(!t1 || !t2) return null;
+    return winnerId === t1 ? t2 : t1;
+  }
+}
+function matchTeams(matchId, data){
+  const m = MATCHES[matchId];
+  return [resolveSlot(m.slots[0], data), resolveSlot(m.slots[1], data)];
+}
+function clearDownstream(data){
+  let changed = true;
+  while(changed){
+    changed = false;
+    MATCH_ORDER.forEach(matchId=>{
+      if(!data[matchId]) return;
+      const [t1,t2] = matchTeams(matchId, data);
+      if(data[matchId] !== t1 && data[matchId] !== t2){
+        delete data[matchId];
+        changed = true;
+      }
+    });
+  }
+}
+
+let teamSaveTimer = null;
+function scheduleTeamSave(){
+  clearTimeout(teamSaveTimer);
+  teamSaveTimer = setTimeout(async ()=>{
+    await storeSet('teams', JSON.stringify(teams), true);
+    renderGroups();
+    renderBracketTab();
+  }, 500);
+}
+function playerRowHtml(id, idx, name){
+  if(isAdmin){
+    return `<div class="player-row"><span class="player-num">${idx+1}</span><input type="text" data-player="${id}" data-pidx="${idx}" value="${escapeAttr(name)}" maxlength="24" placeholder="Игрок ${idx+1}" /></div>`;
+  }
+  const hasName = !!(name && name.trim());
+  return `<div class="player-row"><span class="player-num">${idx+1}</span><span class="player-name ${hasName?'':'empty'}">${hasName?escapeHtml(name):'состав не указан'}</span></div>`;
+}
+function renderParticipants(){
+  const grid = document.getElementById('participantsGrid');
+  grid.innerHTML = '';
+  ALL_TEAM_IDS.forEach(id=>{
+    const t = teams[id];
+    const expanded = expandedTeams.has(id);
+    const hasRoster = !!rosterImages[id];
+    const card = document.createElement('div');
+    card.className = 'team-card' + (expanded ? ' expanded' : '');
+
+    const headHtml = `
+      <div class="team-card-head" data-toggle="${id}">
+        <span class="chevron">▸</span>
+        <div class="badge" style="background:${t.color}" data-badge="${id}">${escapeHtml(t.logo || id)}</div>
+        <div class="team-card-name">${escapeHtml(t.name)}</div>
+      </div>`;
+
+    let bodyHtml = '';
+    if(expanded){
+      const editFieldsHtml = isAdmin ? `
+        <div class="team-edit-fields">
+          <div class="field-grow">
+            <input type="text" data-field="name" data-team="${id}" value="${escapeAttr(t.name)}" maxlength="30" />
+          </div>
+          <div class="field-fixed">
+            <input type="text" class="logo-input" data-field="logo" data-team="${id}" value="${escapeAttr(t.logo)}" maxlength="4" />
+          </div>
+        </div>` : '';
+
+      const players = (t.players && t.players.length === 5) ? t.players : EMPTY_PLAYERS.slice();
+      const playersHtml = `
+        <div class="players-list">
+          ${players.map((p,i)=>playerRowHtml(id,i,p)).join('')}
+        </div>`;
+
+      const rosterHtml = isAdmin ? `
+        <div class="roster-upload-row">
+          ${hasRoster ? `<img class="roster-thumb" src="${rosterImages[id]}" data-roster-view="${id}" />` : ''}
+          <input type="file" accept="image/*" data-roster="${id}" id="rosterFile_${id}" style="display:none" />
+          <label for="rosterFile_${id}" class="btn roster-upload-btn">${hasRoster ? 'Заменить картинку' : 'Загрузить картинку'}</label>
+          ${hasRoster ? `<button type="button" class="btn danger roster-remove-btn" data-roster-remove="${id}">Удалить</button>` : ''}
+        </div>
+        <p class="roster-error" data-roster-err="${id}" style="display:none"></p>`
+        : (hasRoster ? `<span class="roster-view-btn" data-roster-view="${id}">Посмотреть карточку состава</span>` : '');
+
+      bodyHtml = `<div class="team-card-body">${editFieldsHtml}${playersHtml}${rosterHtml}</div>`;
+    }
+
+    card.innerHTML = headHtml + bodyHtml;
+    grid.appendChild(card);
+  });
+
+  if(isAdmin){
+    document.querySelectorAll('.team-edit-fields input[data-field]').forEach(inp=>{
+      inp.addEventListener('input', onTeamFieldChange);
+    });
+    document.querySelectorAll('.player-row input[data-player]').forEach(inp=>{
+      inp.addEventListener('input', onPlayerFieldChange);
+    });
+  }
+}
+function onTeamFieldChange(e){
+  const id = e.target.getAttribute('data-team');
+  const field = e.target.getAttribute('data-field');
+  if(!id || !field) return;
+  teams[id][field] = e.target.value;
+  if(field === 'name'){
+    document.querySelectorAll('.team-card').forEach(c=>{
+      const head = c.querySelector('.team-card-head[data-toggle="'+id+'"]');
+      if(head) head.querySelector('.team-card-name').textContent = e.target.value;
+    });
+  }
+  if(field === 'logo'){
+    document.querySelectorAll(`.badge[data-badge="${id}"]`).forEach(b=>{ b.textContent = e.target.value || id; });
+  }
+  scheduleTeamSave();
+}
+function onPlayerFieldChange(e){
+  const id = e.target.getAttribute('data-player');
+  const idx = parseInt(e.target.getAttribute('data-pidx'), 10);
+  if(!id || isNaN(idx)) return;
+  if(!teams[id].players || teams[id].players.length !== 5) teams[id].players = EMPTY_PLAYERS.slice();
+  teams[id].players[idx] = e.target.value;
+  scheduleTeamSave();
+}
+
+function diffPieces(rw, rl){
+  const diff = rw - rl;
+  const cls = diff > 0 ? 'pos' : (diff < 0 ? 'neg' : 'zero');
+  const label = diff > 0 ? ('+'+diff) : String(diff);
+  return {cls, label};
+}
+function renderGroups(){
+  ['A','B'].forEach(g=>{
+    const container = document.getElementById('groupRows'+g);
+    container.innerHTML = '';
+    groupOrder[g].forEach((teamId, idx)=>{
+      const t = teams[teamId];
+      const st = groupStats[teamId] || {score:'', rw:0, rl:0};
+      const qualifiesUp = idx < 2;
+      const {cls, label} = diffPieces(st.rw, st.rl);
+      const row = document.createElement('div');
+      row.className = 'group-row ' + (qualifiesUp ? 'qualify-up' : 'qualify-down');
+      
+      const controlsHtml = isAdmin ? `
+        <div class="g-controls">
+          <button data-act="up" data-group="${g}" data-idx="${idx}" ${idx===0?'disabled':''}>▲</button>
+          <button data-act="down" data-group="${g}" data-idx="${idx}" ${idx===groupOrder[g].length-1?'disabled':''}>▼</button>
+        </div>` : '';
+
+      const statsHtml = isAdmin ? `
+        <div class="g-stats-edit">
+          <input type="text" class="score-field" data-gs="score" data-team="${teamId}" value="${escapeAttr(st.score)}" maxlength="7" placeholder="2-1" title="Счет" />
+          <input type="number" min="0" class="rw-field" data-gs="rw" data-team="${teamId}" value="${st.rw}" title="Выиграно раундов" />
+          <input type="number" min="0" class="rl-field" data-gs="rl" data-team="${teamId}" value="${st.rl}" title="Проиграно раундов" />
+          <span class="g-diff ${cls}">${label}</span>
+        </div>` : `
+        <div class="g-stats-right">
+          <span class="g-stat-item score-col">${escapeHtml(st.score || '—')}</span>
+          <span class="g-stat-item rounds-col">${st.rw}-${st.rl}</span>
+          <span class="g-diff ${cls}">${label}</span>
+        </div>`;
+
+      const hasRoster = !!rosterImages[teamId];
+      const rosterAttr = hasRoster ? `data-roster-view="${teamId}"` : '';
+
+      row.innerHTML = `
+        <span class="g-rank">${idx+1}</span>
+        <div class="g-badge ${hasRoster?'has-roster':''}" style="background:${t.color}" ${rosterAttr}>${escapeHtml(t.logo||teamId)}</div>
+        <span class="g-name ${hasRoster?'has-roster':''}" ${rosterAttr}>${escapeHtml(t.name)}</span>
+        ${controlsHtml}
+        ${statsHtml}
+      `;
+      container.appendChild(row);
+    });
+  });
+  if(isAdmin){
+    document.querySelectorAll('.g-controls button').forEach(btn=>{
+      btn.addEventListener('click', onGroupReorder);
+    });
+    document.querySelectorAll('.g-stats-edit input').forEach(inp=>{
+      inp.addEventListener('input', onGroupStatChange);
+    });
+  }
+}
+let groupStatSaveTimer = null;
+function onGroupStatChange(e){
+  const id = e.target.getAttribute('data-team');
+  const field = e.target.getAttribute('data-gs');
+  if(!groupStats[id]) groupStats[id] = {score:'', rw:0, rl:0};
+  groupStats[id][field] = field === 'score' ? e.target.value : (parseInt(e.target.value, 10) || 0);
+  const row = e.target.closest('.g-stats-edit');
+  if(row){
+    const {cls, label} = diffPieces(groupStats[id].rw, groupStats[id].rl);
+    const diffEl = row.querySelector('.g-diff');
+    diffEl.textContent = label;
+    diffEl.className = 'g-diff ' + cls;
+  }
+  clearTimeout(groupStatSaveTimer);
+  groupStatSaveTimer = setTimeout(async ()=>{
+    await storeSet('group-stats', JSON.stringify(groupStats), true);
+  }, 500);
+}
+async function onGroupReorder(e){
+  const g = e.target.getAttribute('data-group');
+  const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+  const act = e.target.getAttribute('data-act');
+  const targetIdx = act === 'up' ? idx-1 : idx+1;
+  if(targetIdx < 0 || targetIdx >= groupOrder[g].length) return;
+  const arr = groupOrder[g];
+  [arr[idx], arr[targetIdx]] = [arr[targetIdx], arr[idx]];
+  await storeSet('group-order', JSON.stringify(groupOrder), true);
+  clearDownstream(results);
+  clearDownstream(simPicks);
+  await storeSet('results', JSON.stringify(results), true);
+  await storeSet('sim-picks', JSON.stringify(simPicks), false);
+  renderGroups();
+  renderBracketTab();
+}
+
+function slotHtml(matchId, slotIndex, data, editable, lockedMatches){
+  const m = MATCHES[matchId];
+  const slot = m.slots[slotIndex];
+  const teamId = resolveSlot(slot, data);
+  const decided = !!data[matchId];
+  const isWinner = decided && teamId && data[matchId] === teamId;
+  const isEliminated = decided && teamId && data[matchId] !== teamId;
+  const tbd = !teamId;
+  const locked = !!(lockedMatches && lockedMatches.has(matchId));
+
+  let classes = ['slot'];
+  if(tbd) classes.push('tbd');
+  if(isWinner) classes.push('winner');
+  if(isEliminated) classes.push('eliminated');
+  if(slot.type === 'loser') classes.push('from-ub');
+  if(locked) classes.push('locked');
+  const clickable = editable && !tbd && !locked;
+  if(clickable) classes.push('pickable');
+
+  const t = teamId ? teams[teamId] : null;
+  const hasRoster = !!(teamId && rosterImages[teamId]);
+  const rosterViewable = hasRoster && !clickable;
+  if(rosterViewable) classes.push('has-roster');
+  const rosterAttr = rosterViewable ? ` data-roster-view="${teamId}"` : '';
+  const badge = t ? `<div class="mini-badge${rosterViewable?' has-roster':''}" style="background:${t.color}">${escapeHtml(t.logo||teamId)}</div>` : `<div class="mini-badge"></div>`;
+  const name = t ? escapeHtml(t.name) : '—';
+  const stat = (isWinner || isEliminated) ? `<span class="stat">${isWinner?'✓':''}</span>` : '';
+
+  return `<div class="${classes.join(' ')}"${rosterAttr} ${clickable?`data-pick="${matchId}:${teamId}"`:''}>${badge}<span class="name">${name}</span>${stat}</div>`;
+}
+
+function renderBracket(containerId, data, editable, onPick, lockedMatches){
+  const stage = document.getElementById(containerId);
+  stage.innerHTML = '';
+
+  const svgNs = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNs,'svg');
+  svg.setAttribute('class','connectors');
+  svg.setAttribute('viewBox','0 0 1470 640');
+
+  CONNECTORS.forEach(c=>{
+    const from = LAYOUT[c.from], to = LAYOUT[c.to];
+    const x1 = from.x + BOX_W, y1 = from.y + BOX_H/2;
+    const x2 = to.x, y2 = to.y + 15 + c.toSlot*31;
+    const midX = x1 + (x2-x1)/2;
+    const path = document.createElementNS(svgNs,'path');
+    path.setAttribute('d', `M${x1} ${y1} H${midX} V${y2} H${x2}`);
+    let cls = 'conn';
+    if(data[c.from]){
+      cls += c.zone==='ub' ? ' lit-ub' : (c.zone==='lb' ? ' lit-lb' : ' lit-gf');
+    }
+    path.setAttribute('class', cls);
+    svg.appendChild(path);
+  });
+  stage.appendChild(svg);
+
+  COL_HEADERS.forEach(h=>{
+    const div = document.createElement('div');
+    div.className = 'col-header ' + h.zone;
+    div.style.left = h.x+'px';
+    div.style.top = h.y+'px';
+    div.textContent = h.text;
+    stage.appendChild(div);
+  });
+
+  MATCH_ORDER.forEach(matchId=>{
+    const m = MATCHES[matchId];
+    const pos = LAYOUT[matchId];
+    const box = document.createElement('div');
+    box.className = 'match-box ' + m.round;
+    box.style.left = pos.x+'px';
+    box.style.top = pos.y+'px';
+    box.innerHTML = slotHtml(matchId,0,data,editable,lockedMatches) + slotHtml(matchId,1,data,editable,lockedMatches);
+    stage.appendChild(box);
+  });
+
+  if(editable){
+    stage.querySelectorAll('.slot.pickable').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const [matchId, teamId] = el.getAttribute('data-pick').split(':');
+        onPick(matchId, teamId);
+      });
+    });
+  }
+  fitBracket();
+}
+
+function renderBracketTab(){
+  const data = mode === 'sim' ? simPicks : results;
+  const editable = mode === 'sim' ? true : isAdmin;
+  const lockedMatches = mode === 'sim' ? new Set(MATCH_ORDER.filter(m=>results[m])) : null;
+  renderBracket('bracketStage', data, editable, async (matchId, teamId)=>{
+    data[matchId] = teamId;
+    clearDownstream(data);
+    if(mode === 'sim'){
+      await storeSet('sim-picks', JSON.stringify(simPicks), false);
+    } else {
+      await storeSet('results', JSON.stringify(results), true);
+    }
+    renderBracketTab();
+  }, lockedMatches);
+  const played = MATCH_ORDER.filter(m=>data[m]).length;
+
+  const pillLabel = mode === 'sim' ? 'Симуляция: матчей пройдено' : 'Сыграно матчей';
+  document.getElementById('progressPill').innerHTML = pillLabel + ': <b id="progressVal">'+played+'/10</b>';
+
+  const simBtn = document.getElementById('simToggleBtn');
+  simBtn.textContent = mode === 'sim' ? 'Официальные результаты' : 'Режим симуляции';
+  simBtn.classList.toggle('active', mode === 'sim');
+
+  const resetBtn = document.getElementById('resetBtn');
+  resetBtn.style.display = (mode === 'sim' || isAdmin) ? 'inline-block' : 'none';
+  resetBtn.textContent = mode === 'sim' ? 'Сбросить симуляцию' : 'Сбросить результаты';
+}
+
+function seedSimFromResults(){
+  MATCH_ORDER.forEach(matchId=>{
+    if(results[matchId] && !simPicks[matchId]){
+      simPicks[matchId] = results[matchId];
+    }
+  });
+}
+
+document.getElementById('simToggleBtn').addEventListener('click', async ()=>{
+  mode = mode === 'sim' ? 'results' : 'sim';
+  if(mode === 'sim'){
+    const raw = await storeGet('sim-picks', false);
+    if(raw){ try{ simPicks = JSON.parse(raw); }catch(e){ simPicks = {}; } }
+    seedSimFromResults();
+    await storeSet('sim-picks', JSON.stringify(simPicks), false);
+  }
+  renderBracketTab();
+});
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(mode === 'sim'){
+    const ok = await showConfirm('Сбросить вашу симуляцию до текущего состояния официальной сетки?');
+    if(!ok) return;
+    simPicks = {};
+    seedSimFromResults();
+    await storeSet('sim-picks', JSON.stringify(simPicks), false);
+  } else {
+    if(!isAdmin) return;
+    const ok = await showConfirm('Сбросить все официальные результаты турнира?');
+    if(!ok) return;
+    results = {};
+    await storeSet('results', JSON.stringify(results), true);
+  }
+  renderBracketTab();
+});
+
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+async function init(){
+  const t = await storeGet('teams', true);
+  if(t){
+    try{
+      const loaded = JSON.parse(t);
+      Object.keys(loaded).forEach(id=>{
+        if(!loaded[id].players || loaded[id].players.length !== 5) loaded[id].players = EMPTY_PLAYERS.slice();
+      });
+      teams = loaded;
+    }catch(e){}
+  }
+  const go = await storeGet('group-order', true);
+  if(go){ try{ groupOrder = JSON.parse(go); }catch(e){} }
+  const r = await storeGet('results', true);
+  if(r){ try{ results = JSON.parse(r); }catch(e){} }
+  const gs = await storeGet('group-stats', true);
+  if(gs){ try{ Object.assign(groupStats, JSON.parse(gs)); }catch(e){} }
+  const rosterEntries = await Promise.all(ALL_TEAM_IDS.map(async id=>[id, await storeGet('roster-img:'+id, true)]));
+  rosterEntries.forEach(([id, val])=>{ if(val) rosterImages[id] = val; });
+  updateAdminUI();
+  renderParticipants();
+  renderGroups();
+  renderBracketTab();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
