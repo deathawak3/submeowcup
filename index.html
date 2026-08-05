@@ -559,14 +559,32 @@ document.getElementById('confirmModal').addEventListener('click', (e)=>{
 });
 
 async function storeGet(key, shared){
-  try{ const r = await window.storage.get(key, shared); return r ? r.value : null; }
-  catch(e){ return localStorage.getItem(key); }
+  try {
+    if (window.storage && typeof window.storage.get === 'function') {
+      const r = await window.storage.get(key, shared);
+      return r ? r.value : null;
+    }
+  } catch(e) {
+    console.error('Storage get error for key:', key, e);
+  }
+  return localStorage.getItem(key);
 }
+
 async function storeSet(key, value, shared){
-  try{ await window.storage.set(key, value, shared); return true; }
-  catch(e){ 
-    try { localStorage.setItem(key, value); return true; } 
-    catch(err) { console.error('storage set failed', key, err); return false; }
+  try {
+    if (window.storage && typeof window.storage.set === 'function') {
+      await window.storage.set(key, value, shared);
+      return true;
+    }
+  } catch(e) {
+    console.error('Storage set error for key:', key, e);
+  }
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch(err) {
+    console.error('localStorage fallback failed', key, err);
+    return false;
   }
 }
 async function storeDelete(key, shared){
