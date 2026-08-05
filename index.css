@@ -1,0 +1,29 @@
+/* Исправление отображения на мобильных устройствах */
+@media (max-width: 1480px) {
+  .bracket-scroll {
+    overflow-x: auto; /* Разрешаем мягкий скролл или автомасштабирование */
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Автоматическое уменьшение сетки под ширину экрана телефона */
+@media (max-width: 768px) {
+  body {
+    zoom: 100% !important; /* Убираем жесткие 150% для мобилок, если они мешают */
+  }
+  .wrap {
+    padding: 14px 10px 40px;
+  }
+  .bracket-wrapper {
+    /* Автоматически уменьшаем масштаб сетки под экраны телефонов (примерно 360-400px) */
+    transform: scale(0.32);
+    transform-origin: top left;
+    width: 1470px;
+    margin-bottom: -430px; /* Компенсируем сжатие по высоте для геометрии страницы */
+  }
+  .bracket-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-radius: 12px;
+  }
+}
