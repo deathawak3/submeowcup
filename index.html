@@ -301,14 +301,6 @@ svg.connectors{position:absolute;left:20px;top:20px;width:1470px;height:640px;po
     </div>
   </div>
 
-  <script>
-        function saveData() {
-            const value = document.getElementById('myInput').value;
-            console.log("Сохраняем данные:", value);
-            // Здесь будет код отправки на GitHub API или в базу
-        }
-    </script>
-
   <div class="modal-overlay" id="confirmModal" style="display:none">
     <div class="modal-box">
       <h3 id="confirmTitle">Подтвердите действие</h3>
@@ -568,15 +560,18 @@ document.getElementById('confirmModal').addEventListener('click', (e)=>{
 
 async function storeGet(key, shared){
   try{ const r = await window.storage.get(key, shared); return r ? r.value : null; }
-  catch(e){ return null; }
+  catch(e){ return localStorage.getItem(key); }
 }
 async function storeSet(key, value, shared){
   try{ await window.storage.set(key, value, shared); return true; }
-  catch(e){ console.error('storage set failed', key, e); return false; }
+  catch(e){ 
+    try { localStorage.setItem(key, value); return true; } 
+    catch(err) { console.error('storage set failed', key, err); return false; }
+  }
 }
 async function storeDelete(key, shared){
   try{ await window.storage.delete(key, shared); return true; }
-  catch(e){ return false; }
+  catch(e){ localStorage.removeItem(key); return true; }
 }
 
 function readFileAsDataURL(file){
